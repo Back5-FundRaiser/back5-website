@@ -1,0 +1,3 @@
+# PREVIEW: blocks search engines. Replace with "Allow: /" and a Sitemap line at launch.
+User-agent: *
+Disallow: /
