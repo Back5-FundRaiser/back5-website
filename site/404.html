@@ -24,19 +24,27 @@ a{color:#111116}a:hover{color:#111116}
 .b5-btn{transition:transform .2s cubic-bezier(.16,1,.3,1)}
 .b5-btn:hover{transform:translateY(-2px)}
 @media (prefers-reduced-motion:reduce){.b5-btn{transition:none}.b5-btn:hover{transform:none}}
+.b5-links{display:flex;flex-wrap:wrap;align-items:center;gap:8px 30px;font-size:16px;font-weight:700;margin-left:auto}
+.b5-actions{display:flex;align-items:center;gap:12px}
+.b5-burger{display:none;width:46px;height:46px;align-items:center;justify-content:center;border:2px solid currentColor;border-radius:8px;background:none;cursor:pointer;padding:0}
+@media (max-width:900px){.b5-burger{display:inline-flex}.b5-actions{margin-left:auto}.b5-links{display:none;order:3;flex-basis:100%;flex-direction:column;align-items:stretch;gap:0;margin:0;font-size:19px}.b5-links.is-open{display:flex}.b5-links a{padding:16px 0;border-top:1px solid rgba(128,128,128,.5)}}
+@media (max-width:480px){header img[alt="Back5"]{width:108px !important;height:36px !important}.b5-actions .b5-btn{padding:0 12px !important;font-size:15px !important;min-height:44px !important}.b5-burger{width:44px;height:44px}}
 .b5-prose{max-width:44em;font-size:18px;line-height:1.6;color:#3d3d45}.b5-prose h2{margin:40px 0 12px;font-size:26px;line-height:1.15;font-weight:900;color:#111116}.b5-prose h3{margin:24px 0 8px;font-size:19px;font-weight:800;color:#111116}.b5-prose p,.b5-prose ul{margin:0 0 14px}
 </style>
 </head>
 <body><div style="background: #ffffff">
 <header style="max-width: 1280px; margin: 0 auto; padding: 22px clamp(20px, 5vw, 80px); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px">
 <a href="/" aria-label="Back5 home" style="display: flex"><img src="/assets/back5-logo.svg" alt="Back5" style="height: 44px; width: 132px; display: block"></a>
-<nav aria-label="Main" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 30px; font-size: 16px; font-weight: 700">
+<nav aria-label="Main" id="b5-menu" class="b5-links">
 <a class="b5-navlink" href="/" style="color: #111116">The network</a>
 <a class="b5-navlink" href="/how-we-work/" style="color: #111116">How we work</a>
 <a class="b5-navlink" href="/for-brands/" style="color: #111116">For brands</a>
 <a class="b5-navlink" href="/knowledge-hub/" style="color: #111116">Knowledge hub</a>
-<a class="b5-btn" href="/club-health-check/" style="display: inline-flex; align-items: center; min-height: 46px; padding: 0 22px; background: #111116; color: #ffffff; border-radius: 8px; text-decoration: none; font-weight: 800">Check your club</a>
 </nav>
+<div class="b5-actions">
+<a class="b5-btn" href="/club-health-check/" style="display: inline-flex; align-items: center; min-height: 46px; padding: 0 22px; background: #111116; color: #ffffff; border-radius: 8px; text-decoration: none; font-weight: 800">Check your club</a>
+<button type="button" class="b5-burger" aria-expanded="false" aria-controls="b5-menu" aria-label="Open menu" style="color: #111116"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" style="fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round"><path d="M4 7h16 M4 12h16 M4 17h16"></path></svg></button>
+</div>
 </header>
 <main style="max-width: 1280px; margin: 0 auto; padding: clamp(48px, 8vw, 120px) clamp(20px, 5vw, 80px)">
 <h1 style="margin: 0 0 20px; font-size: clamp(44px, 6vw, 80px); line-height: 0.98; font-weight: 900; letter-spacing: -0.035em">That page isn't here.</h1>
@@ -58,5 +66,18 @@ a{color:#111116}a:hover{color:#111116}
 <span style="font-size: 14px; color: #d2d2d8">© 2026 Back5. All rights reserved.</span>
 </div>
 </footer>
-</div></body>
+</div><script>
+(function () {
+  var btn = document.querySelector('.b5-burger'), menu = document.getElementById('b5-menu');
+  if (!btn || !menu) return;
+  function set(open) {
+    menu.classList.toggle('is-open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  }
+  btn.addEventListener('click', function () { set(!menu.classList.contains('is-open')); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && menu.classList.contains('is-open')) { set(false); btn.focus(); } });
+})();
+</script>
+</body>
 </html>
