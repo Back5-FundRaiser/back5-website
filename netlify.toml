@@ -2,7 +2,14 @@
   publish = "site"
   functions = "netlify/functions"
 
+# Images and video can be cached for a week. Scripts must always be checked
+# for a newer version, so a fix reaches visitors straight away.
 [[headers]]
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
