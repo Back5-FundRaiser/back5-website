@@ -33,11 +33,8 @@ exports.handler = async (event) => {
     'Overall score: ' + clean(d.score, 100),
     clean(d.areas, 2000),
     '',
-    'Start here: ' + clean(d.start_here, 200),
-    'Also worth a look: ' + (clean(d.also_consider, 500) || 'none'),
-    '',
-    'What they picked:',
-    clean(d.problems, 2000),
+    'Priorities:',
+    clean(d.priorities, 3000),
     '',
     'Their answers:',
     clean(d.answers, 6000)
