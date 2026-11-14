@@ -6,6 +6,7 @@ The Back5 website (back5.com.au). Plain HTML, CSS and JavaScript, published by N
 - `site/` the published site. Each page is `site/<address>/index.html`.
 - `site/assets/` images, logos, the film loop and the health check scripts.
 - `site/assets/health-check.js` shared code for both health checks. The areas, questions and advice for each check live in `club-health-check.js` and `sponsorship-health-check.js`; edit wording there. Every question has four answers ordered weakest to strongest.
+- `site/assets/health-check-report.js` draws the PDF scorecard. It embeds Nunito Sans from `site/assets/fonts/` (SIL Open Font License) and the contact photo `site/assets/mark.png`.
 - `netlify/functions/health-check.js` creates an Asana task for every completed health check. To see why a task did not arrive, open the function's log in Netlify.
 - `site/_redirects` sends addresses from the old site to their new pages.
 
