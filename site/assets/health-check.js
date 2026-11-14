@@ -241,112 +241,18 @@ ${a.actions.length ? `<ul style="margin: 0; padding: 0 0 0 20px; display: flex; 
   }
 
   /* ---------- PDF ---------- */
-  function loadLogo() {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        const c = document.createElement('canvas');
-        c.width = img.naturalWidth; c.height = img.naturalHeight;
-        c.getContext('2d').drawImage(img, 0, 0);
-        try { resolve({ data: c.toDataURL('image/png'), ratio: img.naturalHeight / img.naturalWidth }); } catch (err) { resolve(null); }
-      };
-      img.onerror = () => resolve(null);
-      img.src = '/assets/back5-logo-white.png';
-    });
-  }
-
+  // The report itself is drawn by health-check-report.js.
   async function pdf() {
     const status = document.getElementById('b5-pdf');
-    if (!window.jspdf) { status.textContent = 'The PDF could not be made. Reload the page and try again.'; return; }
+    if (!window.jspdf || typeof B5Report === 'undefined') { status.textContent = 'The PDF could not be made. Reload the page and try again.'; return; }
     status.textContent = 'Making your PDF...';
-    const r = report();
-    const logo = await loadLogo();
-    const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
-    const W = 210, M = 18, CW = W - 2 * M, GREY = '#3d3d45';
-    const rgb = (hex) => [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
-    const fill = (hex) => doc.setFillColor.apply(doc, rgb(hex));
-    const ink = (hex) => doc.setTextColor.apply(doc, rgb(hex));
-    const font = (weight, size) => { doc.setFont('helvetica', weight); doc.setFontSize(size); };
-    const paper = (c) => c === '#ffffff' ? INK : c;   // "good" is white on screen, black on paper
-    let y;
-    const header = () => {
-      fill(INK); doc.rect(0, 0, W, 30, 'F');
-      if (logo) doc.addImage(logo.data, 'PNG', M, 8, 42, 42 * logo.ratio);
-      ink('#ffffff'); font('bold', 11); doc.text(cfg.kind + ' scorecard', W - M, 18, { align: 'right' });
-      y = 44;
-    };
-    const footer = () => {
-      fill(YELLOW); doc.rect(0, 281, W, 16, 'F');
-      ink(INK); font('bold', 10);
-      doc.text('Talk it through with Back5: ' + cfg.contactEmail, M, 291);
-      doc.text('www.back5.com.au', W - M, 291, { align: 'right' });
-    };
-    const need = (h) => { if (y + h > 272) { footer(); doc.addPage(); header(); } };
-    const height = (text, size, width) => { font('normal', size); return doc.splitTextToSize(text, width || CW).length * size * 0.42; };
-    const para = (text, size, weight, color, x, width) => {
-      font(weight, size); ink(color);
-      const lines = doc.splitTextToSize(text, width || CW);
-      doc.text(lines, x || M, y); y += lines.length * size * 0.42;
-    };
-
-    header();
-    ink(INK); font('bold', 22); doc.text(contact.organisation || contact.name, M, y); y += 7;
-    font('normal', 10); ink(GREY);
-    doc.text((contact.organisation ? contact.name + ', ' : '') + today(), M, y); y += 9;
-
-    const top = paper(r.band.color);
-    fill(top); doc.rect(M, y, 62, 40, 'F');
-    ink(top === INK ? '#ffffff' : INK);
-    font('bold', 10); doc.text('Overall score', M + 6, y + 9);
-    font('bold', 40); doc.text(String(r.overall), M + 6, y + 27);
-    const numW = doc.getTextWidth(String(r.overall));
-    font('bold', 12); doc.text('/ 100', M + 8 + numW, y + 27);
-    font('bold', 12); doc.text(r.band.label, M + 6, y + 35);
-    ink(INK); font('bold', 13);
-    doc.text(doc.splitTextToSize(r.headline, CW - 70), M + 70, y + 10);
-    y += 50;
-
-    ink(INK); font('bold', 14); doc.text('Score by area', M, y); y += 7;
-    r.areas.forEach((a) => {
-      ink(INK); font('bold', 10.5); doc.text(a.name, M, y);
-      doc.text(a.score + ' / 100', W - M, y, { align: 'right' });
-      fill('#E3E3DF'); doc.rect(M, y + 2, CW, 3, 'F');
-      fill(paper(a.band.color)); doc.rect(M, y + 2, CW * Math.max(a.score, 3) / 100, 3, 'F');
-      y += 11.5;
-    });
-
-    if (r.priorities.length) {
-      y += 4; need(30);
-      ink(INK); font('bold', 14); doc.text(cfg.prioritiesTitle, M, y); y += 8;
-      r.priorities.forEach((a, i) => {
-        const block = 7 + height(a.verdict, 10, CW - 12) + height('Do this first: ' + a.actions[0], 10, CW - 12) + height('How Back5 helps: ' + a.help.name + '. ' + a.help.text, 9, CW - 12) + 9;
-        need(block);
-        ink(ORANGE); font('bold', 22); doc.text(String(i + 1), M, y + 3);
-        ink(INK); font('bold', 13); doc.text(a.name + '  (' + a.score + ' / 100)', M + 12, y); y += 6;
-        para(a.verdict, 10, 'normal', GREY, M + 12, CW - 12); y += 1.5;
-        para('Do this first: ' + a.actions[0], 10, 'bold', INK, M + 12, CW - 12); y += 1.5;
-        para('How Back5 helps: ' + a.help.name + '. ' + a.help.text, 9, 'normal', GREY, M + 12, CW - 12); y += 7;
-      });
+    try {
+      await B5Report.make({ cfg: cfg, report: report(), contact: contact, date: today() });
+      status.textContent = 'Downloaded.';
+    } catch (err) {
+      console.error(err);
+      status.textContent = 'The PDF could not be made. Reload the page and try again.';
     }
-
-    y += 2; need(24);
-    ink(INK); font('bold', 14); doc.text('Area by area', M, y); y += 8;
-    r.areas.forEach((a) => {
-      const block = 6 + height(a.verdict, 10) + a.actions.reduce((s, t) => s + height(t, 9.5, CW - 5) + 1.2, 0) + 6;
-      need(block);
-      ink(INK); font('bold', 12); doc.text(a.name, M, y);
-      font('bold', 10); doc.text(a.score + ' / 100, ' + a.band.label.toLowerCase(), W - M, y, { align: 'right' }); y += 5.5;
-      para(a.verdict, 10, 'normal', INK); y += 1.5;
-      a.actions.forEach((t) => {
-        font('normal', 9.5); ink(GREY); doc.text('-', M, y);
-        para(t, 9.5, 'normal', GREY, M + 5, CW - 5); y += 1.2;
-      });
-      y += 5;
-    });
-    footer();
-    const slug = (contact.organisation || contact.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'scorecard';
-    doc.save('back5-' + cfg.fileWord + '-' + slug + '.pdf');
-    status.textContent = 'Downloaded.';
   }
 
   /* ---------- events ---------- */
